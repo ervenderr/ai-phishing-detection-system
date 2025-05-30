@@ -29,11 +29,9 @@ Set up the development environment, frontend/backend project scaffolding, and lo
   - Source: PhishTank (https://www.phishtank.com/), file: `data/raw/verified_online.csv`
 
 ### 6. Git & CI/CD Setup
-- [ ] Initialize Git and push to GitHub.
-- [ ] Add `.prettierrc`, `.gitignore`, and GitHub Actions for linting.
-""",
-
-    "Sprint_2_NLP_Model_Classifier.md": """
+- [x] Initialize Git and push to GitHub.
+- [x] Add `.prettierrc`, `.gitignore`, and GitHub Actions for linting.
+""",    "Sprint_2_NLP_Model_Classifier.md": """
 # 🤖 Sprint 2: NLP Model & Classifier
 
 ## 🎯 Goal
@@ -42,24 +40,25 @@ Train and integrate an NLP model to classify phishing messages using HuggingFace
 ## ✅ Tasks & Steps
 
 ### 1. Environment Setup
-- [ ] Create virtual environment for ML (`venv` or `conda`).
-- [ ] Install `transformers`, `datasets`, `scikit-learn`.
+- [x] Create virtual environment for ML (`venv` or `conda`).
+- [x] Install `transformers`, `datasets`, `scikit-learn`.
 
 ### 2. Data Preprocessing
-- [ ] Clean and tokenize phishing emails.
-- [ ] Split data into training and test sets.
+- [x] Clean and tokenize phishing emails.
+- [x] Split data into training and test sets.
 
 ### 3. Model Fine-tuning
-- [ ] Load `distilbert-base-uncased`.
-- [ ] Fine-tune using HuggingFace `Trainer` API.
+- [x] Load `distilbert-base-uncased`.
+- [x] Fine-tune using HuggingFace `Trainer` API.
 
 ### 4. Evaluation
-- [ ] Evaluate model accuracy, F1, recall.
-- [ ] Save model and tokenizer to `/ml/models/phishing-detector`.
+- [x] Evaluate model accuracy, F1, recall.
+- [x] Save model and tokenizer to `/ml/models/phishing-detector`.
+  - Results: 95.22% accuracy, 75.87% precision, 47.38% recall, 58.33% F1
 
 ### 5. API Integration
-- [ ] Serve model with FastAPI endpoint `/classify-text`.
-- [ ] Return predictions with confidence score.
+- [x] Serve model with FastAPI endpoint `/classify-text`.
+- [x] Return predictions with confidence score.
 """,
 
     "Sprint_3_Link_Domain_Analysis.md": """
