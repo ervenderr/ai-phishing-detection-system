@@ -41,12 +41,13 @@ ai-phishing-detection-system/
 - ✅ Dataset collection and preprocessing
 - ✅ ML model training with DistilBERT (95.22% accuracy)
 - ✅ ML model integration with API
+- ✅ Link and domain analysis with VirusTotal, AbuseIPDB, and WhoisXML APIs
 - ✅ CI/CD workflow setup
 
 ### In Progress
 
-- 🔄 Link and domain analysis components
 - 🔄 Verdict engine development
+- 🔄 User interface components
 
 ## Getting Started
 

@@ -6,3 +6,6 @@ mail-parser==3.15.0
 python-multipart==0.0.6
 torch>=2.0.0
 transformers>=4.28.1
+requests==2.31.0
+python-dotenv==1.0.0
+tld==0.13.0

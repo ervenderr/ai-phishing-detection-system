@@ -70,18 +70,18 @@ Analyze links and domains in messages to detect suspicious behavior.
 ## ✅ Tasks & Steps
 
 ### 1. Integrate VirusTotal API
-- [ ] Create API key.
-- [ ] Query link and parse JSON response.
+- [x] Create API key.
+- [x] Query link and parse JSON response.
 
 ### 2. Integrate AbuseIPDB API
-- [ ] Use domain/IP to get threat reputation score.
+- [x] Use domain/IP to get threat reputation score.
 
 ### 3. Domain Age Checker
-- [ ] Use WhoisXML API to check domain creation date.
+- [x] Use WhoisXML API to check domain creation date.
 
 ### 4. Build Link Analyzer Module
-- [ ] Scan all links from parsed email.
-- [ ] Return threat score and suspicious flag.
+- [x] Scan all links from parsed email.
+- [x] Return threat score and suspicious flag.
 """,
 
     "Sprint_4_Verdict_Engine.md": """
@@ -93,19 +93,19 @@ Combine AI predictions and link/domain data into a unified verdict and notify us
 ## ✅ Tasks & Steps
 
 ### 1. Create Verdict Rules
-- [ ] Define scoring rules (e.g., high NLP score + bad domain = phishing).
+- [x] Define scoring rules (e.g., high NLP score + bad domain = phishing).
 
 ### 2. Verdict API Endpoint
-- [ ] Create `/verdict` endpoint.
-- [ ] Accept email payload and return threat level.
+- [x] Create `/verdict` endpoint.
+- [x] Accept email payload and return threat level.
 
 ### 3. User Notification System
-- [ ] Send alert to user if message flagged.
-- [ ] Include confidence score and reason.
+- [x] Send alert to user if message flagged.
+- [x] Include confidence score and reason.
 
 ### 4. Logging
-- [ ] Log flagged messages in database.
-- [ ] Track false positives/negatives for retraining.
+- [x] Log flagged messages in database.
+- [x] Track false positives/negatives for retraining.
 """,
 
     "Sprint_5_User_Interface.md": """
