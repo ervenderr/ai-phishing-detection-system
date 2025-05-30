@@ -1,0 +1,188 @@
+## 🎯 Goal
+Set up the development environment, frontend/backend project scaffolding, and load a sample dataset.
+
+## ✅ Tasks & Steps
+
+### 1. Project Initialization
+- [x] Create a GitHub repository.
+- [x] Setup folder structure for:
+  - Frontend (`/frontend`)
+  - Backend API (`/backend`)
+  - AI model (`/ml`)
+  - Database schema (`/db`)
+
+### 2. Initialize Frontend
+- [x] Use `create-next-app` with TypeScript and Tailwind.
+- [x] Add ShadCN and layout components.
+
+### 3. Initialize Backend API
+- [x] Setup Node.js with Express or Python with FastAPI.
+- [x] Create `/scan-email` and `/status` endpoints.
+
+### 4. Add Email Parser
+- [x] Install and configure `mailparser` or similar tool.
+- [x] Test with sample .eml files.
+
+### 5. Load Sample Dataset
+- [x] Download PhishTank or Enron dataset.
+- [x] Store it in `/data/raw` and document source.
+  - Source: PhishTank (https://www.phishtank.com/), file: `data/raw/verified_online.csv`
+
+### 6. Git & CI/CD Setup
+- [ ] Initialize Git and push to GitHub.
+- [ ] Add `.prettierrc`, `.gitignore`, and GitHub Actions for linting.
+""",
+
+    "Sprint_2_NLP_Model_Classifier.md": """
+# 🤖 Sprint 2: NLP Model & Classifier
+
+## 🎯 Goal
+Train and integrate an NLP model to classify phishing messages using HuggingFace Transformers.
+
+## ✅ Tasks & Steps
+
+### 1. Environment Setup
+- [ ] Create virtual environment for ML (`venv` or `conda`).
+- [ ] Install `transformers`, `datasets`, `scikit-learn`.
+
+### 2. Data Preprocessing
+- [ ] Clean and tokenize phishing emails.
+- [ ] Split data into training and test sets.
+
+### 3. Model Fine-tuning
+- [ ] Load `distilbert-base-uncased`.
+- [ ] Fine-tune using HuggingFace `Trainer` API.
+
+### 4. Evaluation
+- [ ] Evaluate model accuracy, F1, recall.
+- [ ] Save model and tokenizer to `/ml/models/phishing-detector`.
+
+### 5. API Integration
+- [ ] Serve model with FastAPI endpoint `/classify-text`.
+- [ ] Return predictions with confidence score.
+""",
+
+    "Sprint_3_Link_Domain_Analysis.md": """
+# 🌐 Sprint 3: Link & Domain Analyzer
+
+## 🎯 Goal
+Analyze links and domains in messages to detect suspicious behavior.
+
+## ✅ Tasks & Steps
+
+### 1. Integrate VirusTotal API
+- [ ] Create API key.
+- [ ] Query link and parse JSON response.
+
+### 2. Integrate AbuseIPDB API
+- [ ] Use domain/IP to get threat reputation score.
+
+### 3. Domain Age Checker
+- [ ] Use WhoisXML API to check domain creation date.
+
+### 4. Build Link Analyzer Module
+- [ ] Scan all links from parsed email.
+- [ ] Return threat score and suspicious flag.
+""",
+
+    "Sprint_4_Verdict_Engine.md": """
+# 🔎 Sprint 4: Verdict Engine & Alert System
+
+## 🎯 Goal
+Combine AI predictions and link/domain data into a unified verdict and notify users/admin.
+
+## ✅ Tasks & Steps
+
+### 1. Create Verdict Rules
+- [ ] Define scoring rules (e.g., high NLP score + bad domain = phishing).
+
+### 2. Verdict API Endpoint
+- [ ] Create `/verdict` endpoint.
+- [ ] Accept email payload and return threat level.
+
+### 3. User Notification System
+- [ ] Send alert to user if message flagged.
+- [ ] Include confidence score and reason.
+
+### 4. Logging
+- [ ] Log flagged messages in database.
+- [ ] Track false positives/negatives for retraining.
+""",
+
+    "Sprint_5_User_Interface.md": """
+# 🖥 Sprint 5: User Interface
+
+## 🎯 Goal
+Build a clean, responsive dashboard and notification interface for users.
+
+## ✅ Tasks & Steps
+
+### 1. Build Dashboard
+- [ ] Overview of flagged messages.
+- [ ] Summary widgets (Total flagged, safe, risky, etc.).
+
+### 2. Message Viewer
+- [ ] Allow user to view message content with highlights.
+- [ ] Display reason and confidence.
+
+### 3. Notification Panel
+- [ ] Real-time alert list.
+- [ ] Allow dismissal or report as false positive.
+""",
+
+    "Sprint_6_Admin_Feedback.md": """
+# 🔐 Sprint 6: Admin Panel & Feedback Loop
+
+## 🎯 Goal
+Create a backend admin view and implement feedback for model improvement.
+
+## ✅ Tasks & Steps
+
+### 1. Admin Dashboard
+- [ ] List all flagged/phishing messages.
+- [ ] Provide filters and search.
+
+### 2. Feedback System
+- [ ] Allow user feedback on each flagged message.
+- [ ] Store feedback in DB.
+
+### 3. Retrain Pipeline
+- [ ] Use feedback to retrain model periodically.
+- [ ] Save new versions and deploy.
+
+### 4. Access Control
+- [ ] Implement admin authentication and RBAC.
+""",
+
+    "Sprint_7_QA_Deploy.md": """
+# ✅ Sprint 7: QA, Testing & Deployment
+
+## 🎯 Goal
+Finalize the project with testing, Dockerization, and deployment.
+
+## ✅ Tasks & Steps
+
+### 1. Write Tests
+- [ ] Unit tests for NLP module and APIs.
+- [ ] Integration tests for end-to-end scans.
+
+### 2. Docker Setup
+- [ ] Create Dockerfiles for backend, frontend, and ML service.
+- [ ] Use Docker Compose for local dev.
+
+### 3. CI/CD Integration
+- [ ] Use GitHub Actions for lint, test, build.
+
+### 4. Deployment
+- [ ] Deploy frontend on Vercel.
+- [ ] Use Render or Railway for backend.
+- [ ] Use managed DB (e.g., Supabase).
+"""
+}
+
+# Write each sprint file to disk
+for filename, content in sprints.items():
+    with open(project_dir / filename, 'w') as file:
+        file.write(content.strip())
+
+project_dir
