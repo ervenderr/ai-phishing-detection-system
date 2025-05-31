@@ -245,6 +245,28 @@ class NotificationSystem:
                 "status": "error",
                 "message": str(e)
             }
+    
+    def add_admin_feedback(self, notification_id: str, feedback: str, notes: str) -> bool:
+        """
+        Add admin feedback (true_positive, false_positive, needs_review) and notes to a notification.
+        
+        Args:
+            notification_id: ID of the notification
+            feedback: Feedback type
+            notes: Additional notes from the admin
+            
+        Returns:
+            True if feedback was added, False if notification not found
+        """
+        for notification in self.notifications:
+            if notification["id"] == notification_id:
+                notification["admin_feedback"] = feedback
+                notification["admin_notes"] = notes
+                logger.info(f"Added admin feedback to notification {notification_id}")
+                return True
+        
+        logger.warning(f"Notification {notification_id} not found for feedback")
+        return False
 
 def get_notification_system() -> NotificationSystem:
     """

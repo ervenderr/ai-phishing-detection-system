@@ -50,27 +50,43 @@ export default function UserMessagesPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiService.listNotifications(userId, 20, 0);
-        const transformedMessages: UserMessage[] = response.notifications.map((notification) => ({
-          id: notification.id,
-          subject: notification.subject,
-          sender: notification.sender,
-          timestamp: notification.timestamp,
-          status: 'delivered',
-          verdict: notification.verdict,
-          confidence: notification.risk_score / 100,
-          reasons: [notification.description],
-          content: '',
-          analysisDetails: {
-            subjectAnalysis: { score: 0.5, indicators: [] },
-            bodyAnalysis: { score: 0.5, indicators: [] },
-            linkAnalysis: { suspiciousLinks: 0, totalLinks: 0, details: [] },
-            senderAnalysis: { domainReputation: 'Unknown', spfStatus: 'Unknown', dkimStatus: 'Unknown' },
-          },
-        }));
+        const response = await apiService.listNotifications(userId, 50, 0);
+        const transformedMessages: UserMessage[] = response.notifications.map((notification) => {
+          let status: 'blocked' | 'delivered' | 'quarantined';
+          if (notification.verdict === 'critical' || notification.verdict === 'dangerous') {
+            status = 'blocked';
+          } else if (notification.verdict === 'suspicious') {
+            status = 'quarantined';
+          } else {
+            status = 'delivered';
+          }
+          return {
+            id: notification.id,
+            subject: notification.subject,
+            sender: notification.sender,
+            timestamp: notification.timestamp,
+            status,
+            verdict: notification.verdict,
+            confidence: notification.risk_score / 100,
+            reasons: [notification.description],
+            content: '',
+            analysisDetails: {
+              subjectAnalysis: { score: 0.5, indicators: [] },
+              bodyAnalysis: { score: 0.5, indicators: [] },
+              linkAnalysis: { suspiciousLinks: 0, totalLinks: 0, details: [] },
+              senderAnalysis: {
+                domainReputation: 'Unknown',
+                spfStatus: 'Unknown',
+                dkimStatus: 'Unknown',
+              },
+            },
+          };
+        });
         setMessages(transformedMessages);
-      } catch {
-        setError('Failed to load messages. Please try again later.');
+      } catch (e: unknown) {
+        setError(
+          e instanceof Error ? e.message : 'Failed to load messages. Please try again later.'
+        );
       } finally {
         setLoading(false);
       }
@@ -120,18 +136,12 @@ export default function UserMessagesPage() {
     );
   }
   if (error) {
-    return (
-      <div className="p-4 text-red-600">{error}</div>
-    );
+    return <div className="p-4 text-red-600">{error}</div>;
   }
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">My Messages</h1>
-      <MessageViewer
-        threats={viewerMessages}
-        onArchive={handleArchive}
-        onDelete={handleDelete}
-      />
+      <MessageViewer threats={viewerMessages} onArchive={handleArchive} onDelete={handleDelete} />
     </div>
   );
 }

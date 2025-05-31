@@ -31,6 +31,8 @@ export const ENDPOINTS = {
   // Notification endpoints
   NOTIFICATIONS_LIST: '/notifications/list',
   NOTIFICATION_ACTION: '/notifications/action',
+  NOTIFICATIONS_ALL: '/notifications/all', // Added endpoint for admin to fetch all notifications
+  NOTIFICATIONS_FEEDBACK: '/notifications/feedback', // Added endpoint for admin feedback submission
 
   // Status endpoint
   STATUS: '/status',
