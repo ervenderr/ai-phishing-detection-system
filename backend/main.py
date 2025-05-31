@@ -20,7 +20,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("phishing_api")
 
+# Initialize FastAPI
 app = FastAPI()
+
+# Add CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Allow your frontend URLs
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 # Initialize link analyzer with environment variables or empty strings
 def get_api_keys() -> Dict[str, str]:

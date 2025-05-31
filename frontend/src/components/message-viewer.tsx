@@ -1,79 +1,165 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, AlertTriangle, CheckCircle, Shield, Eye, Download, Archive, Trash2, Calendar } from "lucide-react"
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Search,
+  AlertTriangle,
+  CheckCircle,
+  Shield,
+  Eye,
+  Download,
+  Archive,
+  Trash2,
+  Calendar,
+} from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface Message {
-  id: string
-  subject: string
-  sender: string
-  threatLevel: string
-  confidence: number
-  timestamp: string
-  reasons: string[]
-  status: "pending" | "reviewed" | "archived"
+  id: string;
+  subject: string;
+  sender: string;
+  threatLevel: string; // "high", "medium", "low" for UI
+  confidence: number;
+  timestamp: string;
+  reasons: string[];
+  status: 'pending' | 'reviewed' | 'archived';
 }
 
 interface MessageViewerProps {
-  threats: Message[]
+  threats: Message[];
+  onArchive?: (messageId: string) => Promise<void>;
+  onDelete?: (messageId: string) => Promise<void>;
 }
 
-export function MessageViewer({ threats }: MessageViewerProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterLevel, setFilterLevel] = useState("all")
-  const [filterStatus, setFilterStatus] = useState("all")
-  const [selectedMessages, setSelectedMessages] = useState<string[]>([])
+export function MessageViewer({ threats, onArchive, onDelete }: MessageViewerProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterLevel, setFilterLevel] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
+  const [actionInProgress, setActionInProgress] = useState<Record<string, boolean>>({});
 
   const filteredMessages = threats.filter((message) => {
     const matchesSearch =
       message.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.sender.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesLevel = filterLevel === "all" || message.threatLevel === filterLevel
-    const matchesStatus = filterStatus === "all" || message.status === filterStatus
+      message.sender.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = filterLevel === 'all' || message.threatLevel === filterLevel;
+    const matchesStatus = filterStatus === 'all' || message.status === filterStatus;
 
-    return matchesSearch && matchesLevel && matchesStatus
-  })
+    return matchesSearch && matchesLevel && matchesStatus;
+  });
 
   const getThreatColor = (level: string) => {
     switch (level) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200"
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200"
-      case "low":
-        return "text-blue-600 bg-blue-50 border-blue-200"
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'low':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200"
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
-  }
+  };
 
   const getThreatIcon = (level: string) => {
     switch (level) {
-      case "high":
-        return <AlertTriangle className="h-4 w-4" />
-      case "medium":
-        return <Shield className="h-4 w-4" />
-      case "low":
-        return <CheckCircle className="h-4 w-4" />
+      case 'high':
+        return <AlertTriangle className="h-4 w-4" />;
+      case 'medium':
+        return <Shield className="h-4 w-4" />;
+      case 'low':
+        return <CheckCircle className="h-4 w-4" />;
       default:
-        return <Shield className="h-4 w-4" />
+        return <Shield className="h-4 w-4" />;
     }
-  }
+  };
 
   const toggleMessageSelection = (messageId: string) => {
     setSelectedMessages((prev) =>
-      prev.includes(messageId) ? prev.filter((id) => id !== messageId) : [...prev, messageId],
-    )
-  }
+      prev.includes(messageId) ? prev.filter((id) => id !== messageId) : [...prev, messageId]
+    );
+  };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString()
-  }
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const handleArchive = async (messageId: string) => {
+    if (!onArchive) return;
+
+    setActionInProgress((prev) => ({ ...prev, [messageId]: true }));
+    try {
+      await onArchive(messageId);
+      // The parent component should handle updating the messages list
+    } catch (error) {
+      console.error('Error archiving message:', error);
+    } finally {
+      setActionInProgress((prev) => ({ ...prev, [messageId]: false }));
+    }
+  };
+
+  const handleDelete = async (messageId: string) => {
+    if (!onDelete) return;
+
+    setActionInProgress((prev) => ({ ...prev, [messageId]: true }));
+    try {
+      await onDelete(messageId);
+      // The parent component should handle updating the messages list
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    } finally {
+      setActionInProgress((prev) => ({ ...prev, [messageId]: false }));
+    }
+  };
+
+  const handleBulkAction = async (action: 'archive' | 'delete') => {
+    if (selectedMessages.length === 0) return;
+
+    const actionMethod = action === 'archive' ? onArchive : onDelete;
+    if (!actionMethod) return;
+
+    // Mark all selected messages as being processed
+    const inProgressUpdates = selectedMessages.reduce(
+      (acc, id) => ({
+        ...acc,
+        [id]: true,
+      }),
+      {}
+    );
+    setActionInProgress((prev) => ({ ...prev, ...inProgressUpdates }));
+
+    try {
+      // Process messages in sequence
+      for (const messageId of selectedMessages) {
+        await actionMethod(messageId);
+      }
+      // Clear selection after successful operation
+      setSelectedMessages([]);
+    } catch (error) {
+      console.error(`Error performing bulk ${action}:`, error);
+    } finally {
+      // Reset in-progress status
+      const completedUpdates = selectedMessages.reduce(
+        (acc, id) => ({
+          ...acc,
+          [id]: false,
+        }),
+        {}
+      );
+      setActionInProgress((prev) => ({ ...prev, ...completedUpdates }));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -84,7 +170,9 @@ export function MessageViewer({ threats }: MessageViewerProps) {
             <Eye className="h-5 w-5 mr-2" />
             Message Analysis History
           </CardTitle>
-          <CardDescription>Review and manage analyzed messages and threat detections</CardDescription>
+          <CardDescription>
+            Review and manage analyzed messages and threat detections
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -132,17 +220,29 @@ export function MessageViewer({ threats }: MessageViewerProps) {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">{selectedMessages.length} message(s) selected</span>
+              <span className="text-sm text-gray-600">
+                {selectedMessages.length} message(s) selected
+              </span>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('archive')}
+                  disabled={!onArchive}
+                >
                   <Archive className="h-4 w-4 mr-2" />
                   Archive
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={true}>
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
-                <Button variant="destructive" size="sm">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleBulkAction('delete')}
+                  disabled={!onDelete}
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </Button>
@@ -185,11 +285,11 @@ export function MessageViewer({ threats }: MessageViewerProps) {
                           <div className="flex items-center space-x-4 mt-2">
                             <Badge
                               variant={
-                                message.threatLevel === "high"
-                                  ? "destructive"
-                                  : message.threatLevel === "medium"
-                                    ? "default"
-                                    : "secondary"
+                                message.threatLevel === 'high'
+                                  ? 'destructive'
+                                  : message.threatLevel === 'medium'
+                                  ? 'default'
+                                  : 'secondary'
                               }
                             >
                               {message.threatLevel.toUpperCase()}
@@ -225,9 +325,20 @@ export function MessageViewer({ threats }: MessageViewerProps) {
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Archive className="h-4 w-4" />
-                          </Button>
+                          {onArchive && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleArchive(message.id)}
+                              disabled={actionInProgress[message.id]}
+                            >
+                              {actionInProgress[message.id] ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent border-gray-400" />
+                              ) : (
+                                <Archive className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -254,5 +365,5 @@ export function MessageViewer({ threats }: MessageViewerProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
