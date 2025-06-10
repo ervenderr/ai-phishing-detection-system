@@ -1,28 +1,13 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { apiService } from '@/lib/api';
-import type { Notification } from '@/lib/api/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -30,157 +15,144 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Search, Eye, CheckCircle, Calendar, Download, Archive } from 'lucide-react';
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Search, Eye, CheckCircle, Calendar, Download, Archive } from "lucide-react"
 
 interface Message {
-  id: string;
-  subject: string;
-  sender: string;
-  recipient: string;
-  threatLevel: 'high' | 'medium' | 'low';
-  confidence: number;
-  timestamp: string;
-  status: 'pending' | 'reviewed' | 'archived';
-  feedback?: 'true_positive' | 'false_positive' | 'needs_review';
-  adminNotes?: string;
+  id: string
+  subject: string
+  sender: string
+  recipient: string
+  threatLevel: "high" | "medium" | "low"
+  confidence: number
+  timestamp: string
+  status: "pending" | "reviewed" | "archived"
+  feedback?: "true_positive" | "false_positive" | "needs_review"
+  adminNotes?: string
 }
 
-export default function MessagesPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterLevel, setFilterLevel] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const mockMessages: Message[] = [
+  {
+    id: "1",
+    subject: "Urgent: Verify Your Account",
+    sender: "security@fake-bank.com",
+    recipient: "user@company.com",
+    threatLevel: "high",
+    confidence: 0.94,
+    timestamp: "2024-01-15T10:30:00Z",
+    status: "pending",
+  },
+  {
+    id: "2",
+    subject: "Invoice #12345 - Payment Required",
+    sender: "billing@suspicious-site.net",
+    recipient: "finance@company.com",
+    threatLevel: "medium",
+    confidence: 0.76,
+    timestamp: "2024-01-15T09:15:00Z",
+    status: "reviewed",
+    feedback: "true_positive",
+    adminNotes: "Confirmed phishing attempt targeting financial information",
+  },
+  {
+    id: "3",
+    subject: "Your Package Delivery Update",
+    sender: "delivery@legit-courier.com",
+    recipient: "user2@company.com",
+    threatLevel: "low",
+    confidence: 0.23,
+    timestamp: "2024-01-15T08:45:00Z",
+    status: "reviewed",
+    feedback: "false_positive",
+    adminNotes: "Legitimate delivery notification, update whitelist",
+  },
+]
 
-  useEffect(() => {
-    const fetchAllMessages = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await apiService.listAllNotifications();
-        // Transform backend notification to Message type
-        const transformed: Message[] = response.notifications.map((n: Notification) => ({
-          id: n.id,
-          subject: n.subject,
-          sender: n.sender,
-          recipient: n.user_id, // user_id as recipient for admin context
-          threatLevel:
-            n.verdict === 'critical' || n.verdict === 'dangerous'
-              ? 'high'
-              : n.verdict === 'suspicious'
-              ? 'medium'
-              : 'low',
-          confidence: n.risk_score / 100,
-          timestamp: n.timestamp,
-          status: 'pending', // Default, can be improved if backend supports
-          feedback: undefined,
-          adminNotes: undefined,
-        }));
-        setMessages(transformed);
-      } catch {
-        setError('Failed to load messages. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllMessages();
-  }, []);
+export default function MessagesPage() {
+  const [messages, setMessages] = useState(mockMessages)
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterLevel, setFilterLevel] = useState("all")
+  const [filterStatus, setFilterStatus] = useState("all")
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
+  const [feedbackDialog, setFeedbackDialog] = useState(false)
 
   const filteredMessages = messages.filter((message) => {
     const matchesSearch =
       message.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       message.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.recipient.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = filterLevel === 'all' || message.threatLevel === filterLevel;
-    const matchesStatus = filterStatus === 'all' || message.status === filterStatus;
+      message.recipient.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesLevel = filterLevel === "all" || message.threatLevel === filterLevel
+    const matchesStatus = filterStatus === "all" || message.status === filterStatus
 
-    return matchesSearch && matchesLevel && matchesStatus;
-  });
+    return matchesSearch && matchesLevel && matchesStatus
+  })
 
-  // Update handleFeedback to call backend and update UI
-  const handleFeedback = async (
+  const handleFeedback = (
     messageId: string,
-    feedback: 'true_positive' | 'false_positive' | 'needs_review',
-    notes: string
+    feedback: "true_positive" | "false_positive" | "needs_review",
+    notes: string,
   ) => {
-    try {
-      await apiService.submitAdminFeedback(messageId, feedback, notes);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, feedback, adminNotes: notes, status: 'reviewed' as const }
-            : msg
-        )
-      );
-      setSelectedMessage(null);
-    } catch (e) {
-      // Optionally show error toast
-      alert('Failed to submit feedback.');
-    }
-  };
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, feedback, adminNotes: notes, status: "reviewed" as const } : msg,
+      ),
+    )
+    setFeedbackDialog(false)
+    setSelectedMessage(null)
+  }
 
   const getThreatBadge = (level: string) => {
     switch (level) {
-      case 'high':
-        return <Badge variant="destructive">High Risk</Badge>;
-      case 'medium':
-        return <Badge variant="default">Medium Risk</Badge>;
-      case 'low':
-        return <Badge variant="secondary">Low Risk</Badge>;
+      case "high":
+        return <Badge variant="destructive">High Risk</Badge>
+      case "medium":
+        return <Badge variant="default">Medium Risk</Badge>
+      case "low":
+        return <Badge variant="secondary">Low Risk</Badge>
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Unknown</Badge>
     }
-  };
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="outline">Pending</Badge>;
-      case 'reviewed':
-        return <Badge variant="secondary">Reviewed</Badge>;
-      case 'archived':
-        return <Badge variant="secondary">Archived</Badge>;
+      case "pending":
+        return <Badge variant="outline">Pending</Badge>
+      case "reviewed":
+        return <Badge variant="secondary">Reviewed</Badge>
+      case "archived":
+        return <Badge variant="secondary">Archived</Badge>
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">Unknown</Badge>
     }
-  };
+  }
 
   const getFeedbackBadge = (feedback?: string) => {
     switch (feedback) {
-      case 'true_positive':
+      case "true_positive":
         return (
           <Badge variant="destructive" className="text-xs">
             True Positive
           </Badge>
-        );
-      case 'false_positive':
+        )
+      case "false_positive":
         return (
           <Badge variant="secondary" className="text-xs">
             False Positive
           </Badge>
-        );
-      case 'needs_review':
+        )
+      case "needs_review":
         return (
           <Badge variant="default" className="text-xs">
             Needs Review
           </Badge>
-        );
+        )
       default:
-        return null;
+        return null
     }
-  };
-
-  if (loading) {
-    return <div className="p-4">Loading...</div>;
-  }
-  if (error) {
-    return <div className="p-4 text-red-600">{error}</div>;
   }
 
   return (
@@ -242,9 +214,7 @@ export default function MessagesPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">
-                {selectedMessages.length} message(s) selected
-              </span>
+              <span className="text-sm text-gray-600">{selectedMessages.length} message(s) selected</span>
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm">
                   <Archive className="h-4 w-4 mr-2" />
@@ -291,9 +261,9 @@ export default function MessagesPage() {
                       checked={selectedMessages.includes(message.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedMessages([...selectedMessages, message.id]);
+                          setSelectedMessages([...selectedMessages, message.id])
                         } else {
-                          setSelectedMessages(selectedMessages.filter((id) => id !== message.id));
+                          setSelectedMessages(selectedMessages.filter((id) => id !== message.id))
                         }
                       }}
                     />
@@ -315,26 +285,17 @@ export default function MessagesPage() {
                     <div className="flex space-x-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedMessage(message)}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => setSelectedMessage(message)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-4xl">
                           <DialogHeader>
                             <DialogTitle>Message Details</DialogTitle>
-                            <DialogDescription>
-                              Review message content and provide feedback
-                            </DialogDescription>
+                            <DialogDescription>Review message content and provide feedback</DialogDescription>
                           </DialogHeader>
                           {selectedMessage && (
-                            <MessageDetailView
-                              message={selectedMessage}
-                              onFeedback={handleFeedback}
-                            />
+                            <MessageDetailView message={selectedMessage} onFeedback={handleFeedback} />
                           )}
                         </DialogContent>
                       </Dialog>
@@ -347,24 +308,18 @@ export default function MessagesPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
 function MessageDetailView({
   message,
   onFeedback,
 }: {
-  message: Message;
-  onFeedback: (
-    id: string,
-    feedback: 'true_positive' | 'false_positive' | 'needs_review',
-    notes: string
-  ) => void;
+  message: Message
+  onFeedback: (id: string, feedback: "true_positive" | "false_positive" | "needs_review", notes: string) => void
 }) {
-  const [feedback, setFeedback] = useState<'true_positive' | 'false_positive' | 'needs_review'>(
-    'true_positive'
-  );
-  const [notes, setNotes] = useState(message.adminNotes || '');
+  const [feedback, setFeedback] = useState<"true_positive" | "false_positive" | "needs_review">("true_positive")
+  const [notes, setNotes] = useState(message.adminNotes || "")
 
   return (
     <div className="space-y-6">
@@ -376,9 +331,9 @@ function MessageDetailView({
         <div>
           <Label className="text-sm font-medium text-gray-500">Threat Level</Label>
           <div className="mt-1">
-            {message.threatLevel === 'high' && <Badge variant="destructive">High Risk</Badge>}
-            {message.threatLevel === 'medium' && <Badge variant="default">Medium Risk</Badge>}
-            {message.threatLevel === 'low' && <Badge variant="secondary">Low Risk</Badge>}
+            {message.threatLevel === "high" && <Badge variant="destructive">High Risk</Badge>}
+            {message.threatLevel === "medium" && <Badge variant="default">Medium Risk</Badge>}
+            {message.threatLevel === "low" && <Badge variant="secondary">Low Risk</Badge>}
           </div>
         </div>
         <div>
@@ -404,9 +359,7 @@ function MessageDetailView({
           <Label className="text-sm font-medium">Provide Feedback</Label>
           <Select
             value={feedback}
-            onValueChange={(value: 'true_positive' | 'false_positive' | 'needs_review') =>
-              setFeedback(value)
-            }
+            onValueChange={(value: "true_positive" | "false_positive" | "needs_review") => setFeedback(value)}
           >
             <SelectTrigger className="mt-2">
               <SelectValue />
@@ -444,5 +397,5 @@ function MessageDetailView({
         </div>
       </div>
     </div>
-  );
+  )
 }

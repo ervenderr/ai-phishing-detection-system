@@ -20,20 +20,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("phishing_api")
 
-# Initialize FastAPI
 app = FastAPI()
-
-# Add CORS middleware
-from fastapi.middleware.cors import CORSMiddleware
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # Allow your frontend URLs
-    allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
-)
 
 # Initialize link analyzer with environment variables or empty strings
 def get_api_keys() -> Dict[str, str]:
@@ -454,40 +441,3 @@ def notification_action(request: NotificationActionRequest, notifier = Depends(g
         "action": request.action,
         "result": result
     }
-
-# New endpoint: List all notifications (admin)
-@app.get("/notifications/all")
-def list_all_notifications(notifier = Depends(get_notification_system_instance)):
-    """
-    List all notifications (admin endpoint).
-    Returns:
-        List of all notifications in the system
-    """
-    logger.info("Listing all notifications (admin)")
-    # Return all notifications (no pagination for now)
-    if hasattr(notifier, 'notifications'):
-        notifications = notifier.notifications
-    else:
-        notifications = []
-    return {
-        "count": len(notifications),
-        "notifications": notifications
-    }
-
-# Pydantic model for admin feedback
-class AdminFeedbackRequest(BaseModel):
-    notification_id: str
-    feedback: str  # 'true_positive', 'false_positive', 'needs_review'
-    notes: Optional[str] = None
-
-@app.post("/notifications/feedback")
-def admin_feedback(request: AdminFeedbackRequest, notifier = Depends(get_notification_system_instance)):
-    """
-    Store admin feedback (true/false positive, needs review, notes) for a notification.
-    """
-    logger.info(f"Admin feedback for notification {request.notification_id}: {request.feedback}")
-    result = notifier.add_admin_feedback(request.notification_id, request.feedback, request.notes or "")
-    if result:
-        return {"status": "success", "notification_id": request.notification_id, "feedback": request.feedback, "notes": request.notes}
-    else:
-        return {"status": "error", "message": "Notification not found"}

@@ -12,7 +12,9 @@ import type {
   TextPayload,
   VerdictRequest,
   VerdictResponse,
+  NotificationListRequest,
   NotificationListResponse,
+  NotificationActionRequest,
   NotificationActionResponse,
   ParsedEmail,
   LinkAnalysis,
@@ -33,21 +35,13 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     method: 'GET',
   };
 
-  // Build headers as a plain object, only including string key/values
-  const mergedHeaders = Object.assign({}, DEFAULT_HEADERS, options.headers || {});
-  // Remove any non-string keys (e.g., accidental array merges)
-  const headers: Record<string, string> = {};
-  for (const [key, value] of Object.entries(mergedHeaders)) {
-    if (typeof value === 'string') headers[key] = value;
-  }
-  if (options.body instanceof FormData) {
-    delete headers['Content-Type'];
-  }
-
   const fetchOptions = {
     ...defaultOptions,
     ...options,
-    headers,
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...(options.headers ?? {}),
+    },
   };
 
   try {
@@ -217,40 +211,6 @@ export const apiService = {
     return apiRequest<NotificationActionResponse>(ENDPOINTS.NOTIFICATION_ACTION, {
       method: 'POST',
       body: JSON.stringify({ notification_id: notificationId, action }),
-    });
-  },
-
-  /**
-   * List all notifications (admin)
-   *
-   * @returns All notifications in the system
-   */
-  listAllNotifications: async () => {
-    return apiRequest<NotificationListResponse>(ENDPOINTS.NOTIFICATIONS_ALL, {
-      method: 'GET',
-    });
-  },
-
-  /**
-   * Submit admin feedback for a notification
-   *
-   * @param notificationId - Notification ID
-   * @param feedback - Feedback type ('true_positive', 'false_positive', 'needs_review')
-   * @param notes - Optional admin notes
-   */
-  submitAdminFeedback: async (
-    notificationId: string,
-    feedback: 'true_positive' | 'false_positive' | 'needs_review',
-    notes?: string
-  ) => {
-    return apiRequest<{
-      status: string;
-      notification_id: string;
-      feedback: string;
-      notes?: string;
-    }>(ENDPOINTS.NOTIFICATIONS_FEEDBACK, {
-      method: 'POST',
-      body: JSON.stringify({ notification_id: notificationId, feedback, notes }),
     });
   },
 };
