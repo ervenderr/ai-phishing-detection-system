@@ -3,6 +3,8 @@
 A comprehensive system for detecting phishing attempts in emails and URLs using machine learning and security APIs.
 
 ## Project Overview
+![image](https://github.com/user-attachments/assets/f1821079-1c45-4e84-902c-ba12816e879e)
+
 
 This system combines modern frontend technologies, robust backend APIs, and state-of-the-art machine learning to provide effective phishing detection capabilities:
 
