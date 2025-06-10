@@ -27,7 +27,7 @@ import {
   Download,
 } from "lucide-react"
 import { apiService } from "@/lib/api"
-import type { VerdictResponse, EmailPayload, VerdictRequest } from "@/lib/api/types"
+import type { EmailPayload, VerdictRequest } from "@/lib/api/types"
 
 interface AnalysisResult {
   verdict: "safe" | "suspicious" | "dangerous" | "critical"
@@ -65,7 +65,8 @@ export default function AnalyzePage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [dragActive, setDragActive] = useState(false)  const analyzeEmail = async () => {
+  const [dragActive, setDragActive] = useState(false)  
+  const analyzeEmail = async () => {
     setIsAnalyzing(true)
     
     try {
@@ -204,7 +205,7 @@ export default function AnalyzePage() {
       setIsAnalyzing(false);
     }
 
-    setAnalysisResult(mockResult)
+    // setAnalysisResult(mockResult)
     setIsAnalyzing(false)
   }
 
